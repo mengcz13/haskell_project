@@ -7,8 +7,8 @@ import Data.Attoparsec.Text
 import Data.Functor
 import Data.Text
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+-- someFunc :: IO ()
+-- someFunc = putStrLn "someFunc"
 
 data Expr
     = FalseLit
@@ -232,5 +232,10 @@ evalentry :: Either String Expr -> Value
 evalentry (Left _) = error "Parse Error!"
 evalentry (Right expr) = evalexpr expr
 
-eval :: Text -> Value
-eval str = evalentry $ parseOnly (exprParser <* endOfInput) str
+eval :: String -> Value
+eval str = evalentry $ parseOnly (exprParser <* endOfInput) $ pack str
+
+defaultMain :: IO()
+defaultMain = do 
+    line <- getLine
+    putStrLn $ show $ eval line
