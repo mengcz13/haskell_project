@@ -24,7 +24,7 @@ library
                        ,GenericPretty
   default-language:    Haskell2010
 
-executable MczParser-exe
+executable ki
   hs-source-dirs:      app
   main-is:             Main.hs
   build-depends:       base
