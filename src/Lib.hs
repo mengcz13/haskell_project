@@ -1,4 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Lib where
 
@@ -8,6 +10,7 @@ import System.Environment
 import Data.Attoparsec.Text
 import Data.Functor
 import Data.Text
+import Text.PrettyPrint
 
 -- someFunc :: IO ()
 -- someFunc = putStrLn "someFunc"
@@ -28,7 +31,29 @@ data Expr
     | Leq Expr Expr
     | Ge Expr Expr
     | Geq Expr Expr
-    deriving Show
+
+instance Show Expr where 
+    show expr = render (expr2Doc expr)
+
+expr2Doc :: Expr -> Doc
+expr2Doc FalseLit = text "FalseLit"
+expr2Doc TrueLit = text "TrueLit"
+expr2Doc (Number x) = text "Number" <+> Text.PrettyPrint.double x
+expr2Doc (Not expr) = (text "Not") $+$ (nest 4 $ parens (expr2Doc expr))
+expr2Doc (And expr1 expr2) = binaryDoc "And" expr1 expr2
+expr2Doc (Or expr1 expr2) = binaryDoc "Or" expr1 expr2
+expr2Doc (Add expr1 expr2) = binaryDoc "Add" expr1 expr2
+expr2Doc (Sub expr1 expr2) = binaryDoc "Sub" expr1 expr2
+expr2Doc (Mul expr1 expr2) = binaryDoc "Mul" expr1 expr2
+expr2Doc (Div expr1 expr2) = binaryDoc "Div" expr1 expr2
+expr2Doc (Equ expr1 expr2) = binaryDoc "Equ" expr1 expr2
+expr2Doc (Le expr1 expr2) = binaryDoc "Le" expr1 expr2
+expr2Doc (Leq expr1 expr2) = binaryDoc "Leq" expr1 expr2
+expr2Doc (Ge expr1 expr2) = binaryDoc "Ge" expr1 expr2
+expr2Doc (Geq expr1 expr2) = binaryDoc "Geq" expr1 expr2
+
+binaryDoc :: String -> Expr -> Expr -> Doc
+binaryDoc str expr1 expr2 = (text str) $+$ (nest 4 (parens (expr2Doc expr1) $$ parens (expr2Doc expr2)))
     
 exprParser :: Parser Expr
 exprParser = falseParser <|> trueParser <|> notParser <|> andParser <|> orParser 
@@ -43,115 +68,115 @@ trueParser = lexeme $ string "True" $> TrueLit
 
 notParser :: Parser Expr
 notParser = do
-    lexeme $ char '('
+    lexeme $ Data.Attoparsec.Text.char '('
     lexeme $ string "not"
     expr <- exprParser
-    lexeme $ char ')'
+    lexeme $ Data.Attoparsec.Text.char ')'
     return (Not expr)
 
 andParser :: Parser Expr
 andParser = do
-    lexeme $ char '('
+    lexeme $ Data.Attoparsec.Text.char '('
     lexeme $ string "and"
     expr1 <- exprParser
     expr2 <- exprParser
-    lexeme $ char ')'
+    lexeme $ Data.Attoparsec.Text.char ')'
     return (And expr1 expr2)
 
 orParser :: Parser Expr
 orParser = do
-    lexeme $ char '('
+    lexeme $ Data.Attoparsec.Text.char '('
     lexeme $ string "or"
     expr1 <- exprParser
     expr2 <- exprParser
-    lexeme $ char ')'
+    lexeme $ Data.Attoparsec.Text.char ')'
     return (Or expr1 expr2)
 
 numberParser :: Parser Expr
 numberParser = do
     skipSpace
-    num <- double
+    num <- Data.Attoparsec.Text.double
     return (Number num)
 
 addParser :: Parser Expr
 addParser = do
-    lexeme $ char '('
-    lexeme $ char '+'
+    lexeme $ Data.Attoparsec.Text.char '('
+    lexeme $ Data.Attoparsec.Text.char '+'
     expr1 <- exprParser
     expr2 <- exprParser
-    lexeme $ char ')'
+    lexeme $ Data.Attoparsec.Text.char ')'
     return (Add expr1 expr2)
 
 subParser :: Parser Expr
 subParser = do
-    lexeme $ char '('
-    lexeme $ char '-'
+    lexeme $ Data.Attoparsec.Text.char '('
+    lexeme $ Data.Attoparsec.Text.char '-'
     expr1 <- exprParser
     expr2 <- exprParser
-    lexeme $ char ')'
+    lexeme $ Data.Attoparsec.Text.char ')'
     return (Sub expr1 expr2)
 
 mulParser :: Parser Expr
 mulParser = do
-    lexeme $ char '('
-    lexeme $ char '*'
+    lexeme $ Data.Attoparsec.Text.char '('
+    lexeme $ Data.Attoparsec.Text.char '*'
     expr1 <- exprParser
     expr2 <- exprParser
-    lexeme $ char ')'
+    lexeme $ Data.Attoparsec.Text.char ')'
     return (Mul expr1 expr2)
 
 divParser :: Parser Expr
 divParser = do
-    lexeme $ char '('
-    lexeme $ char '/'
+    lexeme $ Data.Attoparsec.Text.char '('
+    lexeme $ Data.Attoparsec.Text.char '/'
     expr1 <- exprParser
     expr2 <- exprParser
-    lexeme $ char ')'
+    lexeme $ Data.Attoparsec.Text.char ')'
     return (Div expr1 expr2)
 
 equParser :: Parser Expr
 equParser = do
-    lexeme $ char '('
-    lexeme $ char '='
+    lexeme $ Data.Attoparsec.Text.char '('
+    lexeme $ Data.Attoparsec.Text.char '='
     expr1 <- exprParser
     expr2 <- exprParser
-    lexeme $ char ')'
+    lexeme $ Data.Attoparsec.Text.char ')'
     return (Equ expr1 expr2)
 
 leParser :: Parser Expr
 leParser = do
-    lexeme $ char '('
-    lexeme $ char '<'
+    lexeme $ Data.Attoparsec.Text.char '('
+    lexeme $ Data.Attoparsec.Text.char '<'
     expr1 <- exprParser
     expr2 <- exprParser
-    lexeme $ char ')'
+    lexeme $ Data.Attoparsec.Text.char ')'
     return (Le expr1 expr2)
 
 leqParser :: Parser Expr
 leqParser = do
-    lexeme $ char '('
+    lexeme $ Data.Attoparsec.Text.char '('
     lexeme $ string "<="
     expr1 <- exprParser
     expr2 <- exprParser
-    lexeme $ char ')'
+    lexeme $ Data.Attoparsec.Text.char ')'
     return (Leq expr1 expr2)
 
 geParser :: Parser Expr
 geParser = do
-    lexeme $ char '('
-    lexeme $ char '>'
+    lexeme $ Data.Attoparsec.Text.char '('
+    lexeme $ Data.Attoparsec.Text.char '>'
     expr1 <- exprParser
     expr2 <- exprParser
-    lexeme $ char ')'
+    lexeme $ Data.Attoparsec.Text.char ')'
     return (Ge expr1 expr2)
 
 geqParser :: Parser Expr
 geqParser = do
-    lexeme $ char '('
+    lexeme $ Data.Attoparsec.Text.char '('
     lexeme $ string ">="
     expr1 <- exprParser
     expr2 <- exprParser
-    lexeme $ char ')'
+    lexeme $ Data.Attoparsec.Text.char ')'
     return (Geq expr1 expr2)
     
 lexeme :: Parser a -> Parser a
@@ -163,7 +188,11 @@ data Value
     = BoolValue Bool
     | NumValue Double
     | Infostr String
-    deriving Show
+
+instance Show Value where
+    show (BoolValue x) = show x
+    show (NumValue x) = show x
+    show (Infostr str) = show str
 
 vnot :: Value -> Value
 vnot (BoolValue v) = BoolValue $ not v
@@ -237,7 +266,10 @@ evalentry (Right expr) = evalexpr expr
 eval :: String -> Value
 eval str = evalentry $ parseOnly (exprParser <* endOfInput) $ pack str
 
-evalTree str = parseOnly (exprParser <* endOfInput) $ pack str
+getRightTree :: Either String Expr -> Expr
+getRightTree (Right expr) = expr
+
+evalTree str = getRightTree $ parseOnly (exprParser <* endOfInput) $ pack str
 
 defaultMain :: IO()
 defaultMain = do 
