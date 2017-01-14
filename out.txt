@@ -1,0 +1,3 @@
+BoolValue True
+BoolValue False
+NumValue 8.0

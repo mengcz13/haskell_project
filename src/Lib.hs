@@ -3,6 +3,8 @@
 module Lib where
 
 import Control.Applicative
+import Control.Monad.State
+import System.Environment
 import Data.Attoparsec.Text
 import Data.Functor
 import Data.Text
@@ -234,6 +236,8 @@ evalentry (Right expr) = evalexpr expr
 
 eval :: String -> Value
 eval str = evalentry $ parseOnly (exprParser <* endOfInput) $ pack str
+
+evalTree str = parseOnly (exprParser <* endOfInput) $ pack str
 
 defaultMain :: IO()
 defaultMain = do 

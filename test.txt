@@ -1,0 +1,3 @@
+(not False)
+(not True)
+(+ 8 (- 9 9))
